@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import MobileCoreServices
 
 internal class FormData {
     
