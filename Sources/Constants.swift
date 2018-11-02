@@ -18,8 +18,7 @@ internal func uriDecode(string:String) -> String{
 
 internal func uriEncode(string:Any) -> String{
     let allowedCharacters = CharacterSet(charactersIn:" \"#%/<>?@\\^`{}[]|&+").inverted
-
-    return (string as AnyObject).addingPercentEncoding(withAllowedCharacters: allowedCharacters)!
+    return (string as! String).addingPercentEncoding(withAllowedCharacters: allowedCharacters)!
 }
 
 internal func stringToData(string:String) -> Data {
@@ -27,7 +26,7 @@ internal func stringToData(string:String) -> Data {
 }
 
 internal func dataToString(data:Data) -> String {
-    return NSString(data: data, encoding: String.Encoding.utf8.rawValue)! as String
+    return String(bytes: data, encoding: .ascii)!
 }
 
 internal func queryPair(key:String, value:Any) -> String{
