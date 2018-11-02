@@ -23,7 +23,6 @@ open class Request {
     var transformer:(Response) -> Response = {$0};
     var query:[String] = Array();
     var errorHandler:((Error) -> Void);
-    var formData:FormData?;
     
     internal init(method: String, url: String, errorHandler:@escaping (Error) -> Void){
         self.method = method;
@@ -178,40 +177,6 @@ open class Request {
         return self;
     }
     
-    private func getFormData() -> FormData {
-        if(self.formData == nil) {
-            self.formData = FormData();
-        }
-        
-        return self.formData!;
-    }
-    
-    /// Adds a field to a multipart request
-    open func field(name:String, value:String) -> Request {
-        self.getFormData().append(name: name, value: value);
-        return self;
-    }
-    
-    /// Attached a file to a multipart request.  If the mimeType isnt given, it will be inferred.
-    open func attach(name:String, data:Data, filename:String, withMimeType mimeType:String? = nil) -> Request {
-        self.getFormData().append(name: name, data: data, filename: filename, mimeType: mimeType)
-        return self
-    }
-    
-    /// Attached a file to a multipart request.  If the mimeType isnt given, it will be inferred.  
-    /// If the filename isnt given it will be pulled from the path
-    open func attach(name:String, path:String, filename:String? = nil, withMimeType mimeType:String? = nil) -> Request {
-        var basename:String! = filename;
-        if(filename == nil){
-            basename = URL(string: path)!.lastPathComponent;
-        }
-        let data = try? Data(contentsOf: URL(fileURLWithPath: path))
-        
-        self.getFormData().append(name: name, data: data ?? Data(), filename: basename, mimeType: mimeType)
-        
-        return self
-    }
-    
     /// Sends the request using the passed in completion handler and the optional error handler
     open func end(done: @escaping (Response) -> Void, onError errorHandler: ((Error) -> Void)? = nil) {
         if(self.query.count > 0){
@@ -230,12 +195,7 @@ open class Request {
         request.httpMethod = self.method;
         
         if(self.method != "GET" && self.method != "HEAD") {
-            if(self.formData != nil) {
-                request.httpBody = self.formData!.getBody() as Data?;
-                _ = self.type(type: self.formData!.getContentType());
-                _ = self.set(key: "Content-Length", value: String(describing: request.httpBody?.count));
-            }
-            else if(self.data != nil){
+            if(self.data != nil){
                 if let data = self.data as? Data {
                     request.httpBody = data;
                 }
